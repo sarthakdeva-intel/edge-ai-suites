@@ -1,0 +1,50 @@
+{
+  "store": {
+    "name": "retail_store_1",
+    "id": "store_001"
+  },
+  "cameras": [
+    {
+      "name": "lifestyle-cam1",
+      "number": 1,
+      "description": "Men's footwear section",
+      "data_topic": "scenescape/data/camera/lifestyle-cam1",
+      "image_topic": "scenescape/image/camera/lifestyle-cam1"
+    },
+    {
+      "name": "lifestyle-cam2",
+      "number": 2,
+      "description": "Women's footwear section",
+      "data_topic": "scenescape/data/camera/lifestyle-cam2",
+      "image_topic": "scenescape/image/camera/lifestyle-cam2"
+    },
+    {
+      "name": "lifestyle-cam3",
+      "number": 3,
+      "description": "Store room",
+      "data_topic": "scenescape/data/camera/lifestyle-cam3",
+      "image_topic": "scenescape/image/camera/lifestyle-cam3"
+    }
+  ],
+  "mqtt": {
+    "host": "broker.scenescape.intel.com",
+    "port": 1883,
+    "use_tls": true,
+    "cert_required": false,
+    "verify_hostname": false,
+    "ca_cert_path": "secrets/certs/scenescape-ca.pem",
+    "scene_data_topic_pattern": "scenescape/data/scene/+/+"
+  },
+  "vlm": {
+    "base_url": "http://vlm-openvino-serving:8000",
+    "model": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "timeout_seconds": 300,
+    "max_completion_tokens": 500,
+    "temperature": 0.1,
+    "top_p": 0.1
+  },
+  "analysis": {
+    "interval_seconds": 10,
+    "analysis_window_seconds": 30
+  }
+}
