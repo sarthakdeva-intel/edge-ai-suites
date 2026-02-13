@@ -12,11 +12,11 @@ This agent connects to an existing Scenescape deployment running in the same Doc
 
 ## Key Components
 
-- **MQTT Service**: Subscribes to camera data/image topics from Scenescape
+- **MQTT Service**: Subscribes to camera data/image, scene data and event topics from Scenescape
 - **Data Aggregator**: Collects and prepares data for analysis
-- **VLM Service**: Sends data to Vision Language Model for intelligent analysis
+- **VLM Service**: Structures the prompt and sends data to Vision Language Model for intelligent analysis
 - **API Routes**: RESTful endpoints to access retail analytics
-- **Config Service**: Simple configuration management
+- **Config Service**: configuration management
 
 ## Configuration
 
@@ -50,19 +50,11 @@ Configuration is stored in `src/config/retail_store_agent.json`:
 }
 ```
 
-### Dynamic Camera Configuration
-
-The agent supports a dynamic number of cameras. Set `num_cameras` in the config to match your deployment. Camera topics will be automatically generated as:
-- Data: `scenescape/data/camera/camera1`, `scenescape/data/camera/camera2`, ...
-- Images: `scenescape/image/camera/camera1`, `scenescape/image/camera/camera2`, ...
-
 ## Setup
 
 ### Prerequisites
 
-1. Scenescape must be running in the same Docker network
-2. Docker and Docker Compose installed
-3. Access to the MQTT broker
+Scenescape must be running in the same Docker network
 
 ### Quick Start
 
@@ -103,36 +95,11 @@ http://localhost:8081/docs
 
 ### Main Endpoint
 
-**GET** `/retail/current?images=true`
+**GET** `/retail/current`
 
 Returns current retail store analysis including:
 - Store data and camera information
 - VLM analysis summary
-- Alerts and recommendations
-- Optional: Camera images (set `images=false` to exclude)
-
-Example response:
-```json
-{
-  "timestamp": "2026-02-05T10:30:00Z",
-  "store_id": "store_001",
-  "data": {
-    "store_id": "store_001",
-    "store_name": "retail_store_1",
-    "timestamp": "2026-02-05T10:30:00Z",
-    "camera_data": {
-      "camera1": {...},
-      "camera2": {...}
-    }
-  },
-  "vlm_analysis": {
-    "summary": "Store activity is normal...",
-    "alerts": [],
-    "recommendations": []
-  },
-  "camera_images": {...}
-}
-```
 
 ## Management Commands
 
@@ -191,16 +158,6 @@ The architecture is designed to be extended with custom rules engines. The data 
 
 You can add custom services in the `services/` directory and integrate them into the data aggregator.
 
-### Future Use Cases
-
-This foundation supports various retail use cases:
-- Footfall counting in ROIs
-- Queue management
-- Customer journey tracking
-- Occupancy monitoring
-- Heatmap analysis
-- Behavior analytics
-
 ## Troubleshooting
 
 ### MQTT Connection Issues
@@ -214,13 +171,12 @@ This foundation supports various retail use cases:
 
 1. Check GPU/CPU availability
 2. Verify model download: models are cached in `ov-models` volume
-3. Adjust VLM_DEVICE, VLM_WORKERS, or VLM_COMPRESSION_WEIGHT_FORMAT
+3. Adjust VLM_DEVICE or VLM_COMPRESSION_WEIGHT_FORMAT
 
 ### Performance Optimization
 
 - **GPU acceleration**: Set `VLM_DEVICE=GPU` for faster inference
 - **Rate limiting**: Adjust `rate_limit_seconds` in config to control analysis frequency
-- **Workers**: Set `VLM_WORKERS` based on your hardware capabilities
 
 ## License
 
