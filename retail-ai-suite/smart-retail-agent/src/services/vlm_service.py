@@ -226,9 +226,21 @@ class VLMService:
                 for region in obj.regions:
                     regions_info.append(f"{region.region_name or region.region_id}")
                 
+                # Check for employee attribute in metadata
+                is_employee = False
+                employee_status = "Customer"
+                if obj.metadata and 'sensors' in obj.metadata:
+                    sensors = obj.metadata.get('sensors', {})
+                    if 'Employee_Register' in sensors:
+                        employee_register = sensors.get('Employee_Register', [])
+                        if isinstance(employee_register, list) and len(employee_register) > 0:
+                            is_employee = True
+                            employee_status = "Employee"
+                
                 obj_info = (
                     f"  - Object ID: {obj.object_id}\n"
                     f"    Category: {obj.category}\n"
+                    f"    Role: {employee_status}\n"
                     f"    Visibility: {obj.visibility:.2f}\n"
                     f"    Visible in cameras: {', '.join(obj.camera_ids) if obj.camera_ids else 'none'}\n"
                     f"    Regions: {', '.join(regions_info) if regions_info else 'none'}"
@@ -241,17 +253,9 @@ class VLMService:
         camera_context_str = "\n".join([f"- {name}: {desc}" for name, desc in camera_contexts.items()])
         
         # Create structured prompt for scene understanding
-        prompt = f"""Analyze the retail store scene and provide a summary.
+        prompt = f"""Analyze the retail store scene and provide a comprehensive scene understanding.
 
-STORE INFORMATION:
-Store: {store_name}
-Timestamp: {timestamp}
-
-CAMERA DATA:
-{camera_summary}
-
-OBJECT TRACKING:
-{scene_info}
+===== CONTEXT =====
 
 STORE INFORMATION:
 Store: {store_name}
@@ -266,22 +270,52 @@ CAMERA DATA:
 OBJECT TRACKING METADATA:
 {scene_info}
 
-ANALYSIS TASK:
-Provide a comprehensive scene understanding based on the camera images and object tracking metadata. Use the unique object IDs to track the same person across frames and cameras. Consider the camera contexts (which areas they monitor) when analyzing activities and interactions.
+===== ANALYSIS INSTRUCTIONS =====
 
-Cover the following in your response:
-- High-level description of what's happening in the store
-- Individual person activities (reference object IDs when available)
-- Person-to-person or person-to-object interactions (e.g., examining products, interacting with shelves)
-- Key behavioral insights or notable observations
+Analyze the camera images and object tracking metadata to understand what's happening in the store. Use the unique object IDs to track the same person across frames and cameras. Consider the camera contexts (which areas they monitor) when analyzing activities and interactions.
 
-Focus on:
-1. Using object tracking IDs to maintain continuity of the same person across frames
-2. Identifying interactions between people or with store fixtures (shelves, products, etc.)
-3. Understanding movement patterns and dwell times in different store sections
-4. Providing actionable insights about customer behavior
+STEP 1 - IDENTIFY PEOPLE:
+First, identify and categorize people in the scene:
+- Each tracked object in the metadata includes a "Role" field that indicates "Employee" or "Customer"
+- This role is determined by the presence of "sensors.Employee_Register" attribute in the tracking system
+- USE THIS ROLE FIELD as the primary indicator of whether someone is an employee or customer
+- You may optionally verify this with visual cues (uniforms, name badges, vests, lanyards, etc.) if visible in the images
+- Reference each person by their Object ID throughout your analysis
 
-Respond as a plain text paragraph with sub points."""
+STEP 2 - ANALYZE ACTIVITIES AND INTERACTIONS:
+Provide detailed analysis covering:
+
+A) Store Overview:
+   - High-level description of what's happening in the store
+   - Overall activity level and flow patterns
+   - Which store sections have the most activity
+
+B) Individual Activities (reference object IDs):
+   - Employee activities: restocking, standing at checkout, monitoring, organizing displays, etc.
+   - Customer activities: shopping, browsing, examining products, moving through aisles, etc.
+
+C) Person-to-Person Interactions:
+   - CUSTOMER-EMPLOYEE INTERACTIONS: Customers asking for help, employees assisting customers, product recommendations, questions being answered, checkout interactions
+   - EMPLOYEE-EMPLOYEE INTERACTIONS: Employees collaborating, communicating, coordinating tasks, working together on displays or restocking
+   - CUSTOMER-CUSTOMER INTERACTIONS: People shopping together, conversations, group coordination
+
+D) Person-to-Object Interactions:
+   - Products being examined, picked up, or returned to shelves
+   - Interaction with store fixtures (shelves, displays, shopping carts, baskets)
+   - Dwell time at specific product areas or displays
+   - Products being added to or removed from carts/baskets
+
+E) Behavioral Insights:
+   - Movement patterns and navigation through the store
+   - Dwell times in different sections and what they indicate
+   - Customer engagement levels with products or displays
+   - Employee attentiveness and customer service behaviors
+   - Any unusual behaviors or areas of concern
+   - Actionable insights for store operations or customer experience improvement
+
+===== OUTPUT FORMAT =====
+
+Respond in plain text with clear paragraphs and sub-points. Use bullet points for clarity. Reference object IDs when discussing specific individuals to maintain tracking continuity."""
         
         return prompt
     

@@ -82,17 +82,16 @@ services:
       VLM_MAX_COMPLETION_TOKENS: ${VLM_MAX_COMPLETION_TOKENS:-500}
       VLM_TEMPERATURE: ${VLM_TEMPERATURE:-}
       VLM_TOP_P: ${VLM_TOP_P:-}
-      
-  #   volumes:
-  #     - ${APP_DIR:-..}/src/config:/app/config:ro
-  #     - retail-agent-data:/app/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:8081/health || exit 1"]
-  #     interval: ${HEALTH_CHECK_INTERVAL:-30s}
-  #     timeout: ${HEALTH_CHECK_TIMEOUT:-10s}
-  #     retries: ${HEALTH_CHECK_RETRIES:-3}
-  #     start_period: ${HEALTH_CHECK_START_PERIOD:-10s}
-  #   restart: unless-stopped
+    volumes:
+      - ${APP_DIR:-..}/src/config:/app/config:ro
+      - retail-agent-data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/health || exit 1"]
+      interval: ${HEALTH_CHECK_INTERVAL:-30s}
+      timeout: ${HEALTH_CHECK_TIMEOUT:-10s}
+      retries: ${HEALTH_CHECK_RETRIES:-3}
+      start_period: ${HEALTH_CHECK_START_PERIOD:-10s}
+    restart: unless-stopped
 
   register_employee:
     build:
