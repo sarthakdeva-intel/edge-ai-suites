@@ -10,6 +10,11 @@ This agent connects to an existing Scenescape deployment running in the same Doc
 - Feeds data to a Vision Language Model (VLM) for analysis
 - Provides REST API endpoints for querying retail insights
 
+### Architecture Diagram
+
+![Architecture Diagram](./docs/_assets/Architecture.png)
+*Figure 1: Detailed Architecture of the Scene Understanding and Rules Engine*
+
 ## Key Components
 
 - **MQTT Service**: Subscribes to camera data/image, scene data and event topics from Scenescape
